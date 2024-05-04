@@ -1,5 +1,5 @@
 const socket = io("http://localhost:3000", { transports: ["websocket"] }); //the / endpoint
-
+let nSocket = "";
 socket.on("nsList", (nsData) => {
   let namespaceDiv = document.querySelector(".namespaces");
   namespaceDiv.innerHTML = "";

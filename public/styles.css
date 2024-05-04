@@ -76,6 +76,7 @@ body {
 
 .message-form {
   margin: 0px;
+  margin-top: 10px;
   margin-bottom: 10px;
   position: absolute;
   bottom: 0;

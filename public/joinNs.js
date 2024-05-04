@@ -1,5 +1,5 @@
 function joinNs(endpoint) {
-  const nSocket = io(`http://localhost:3000${endpoint}`, {
+  nSocket = io(`http://localhost:3000${endpoint}`, {
     transports: ["websocket"],
   });
 
@@ -22,17 +22,36 @@ function joinNs(endpoint) {
         console.log(roomId);
       });
     });
+    const topRoom = document.querySelector(".room");
+
+    joinRoom(topRoom.innerText.trim());
   });
 
   nSocket.on("newMessageToClients", (msg) => {
-    console.log(msg);
-    document.querySelector("#messages").innerHTML += `<li>${msg.text}</li>`;
+    msg = buildHTML(msg);
+    newMsg = document.querySelector("#messages").innerHTML += msg;
   });
 
   document.querySelector(".message-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const newMessage = document.querySelector("#user-message").value;
     if (newMessage === "") return;
-    socket.emit("newMessageToServer", { text: newMessage });
+    nSocket.emit("newMessageToServer", { text: newMessage });
   });
+}
+
+function buildHTML(msg) {
+  const convertedDate = new Date(msg.time).toLocaleString();
+  const newHTML = `
+  <li>
+    <div class="user-image">
+      <img src=${msg.avatar} />
+    </div>
+    <div class="user-message">
+      <div class="user-name-time">${msg.username} <span>${convertedDate}</span></div>
+      <div class="message-text">${msg.text}</div>
+    </div>
+  </li>
+  `;
+  return newHTML;
 }
