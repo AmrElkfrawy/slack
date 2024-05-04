@@ -1,4 +1,12 @@
-const socket = io("http://localhost:3000", { transports: ["websocket"] }); //the / endpoint
+let username = prompt("What is your username");
+if (!username) {
+  username = "Unknown";
+}
+
+const socket = io("http://localhost:3000", {
+  transports: ["websocket", "polling"],
+  query: { username },
+}); //the / endpoint
 let nSocket = "";
 socket.on("nsList", (nsData) => {
   let namespaceDiv = document.querySelector(".namespaces");
@@ -6,16 +14,16 @@ socket.on("nsList", (nsData) => {
   nsData.forEach((ns) => {
     namespaceDiv.innerHTML += `<div class="namespace" ns="${ns.endpoint}"><div><img src="${ns.img}"/></div>`;
   });
-
+  let nsEndpoint;
   Array.from(document.getElementsByClassName("namespace")).forEach(
     (element) => {
       element.addEventListener("click", (e) => {
-        const nsEndpoint = element.getAttribute("ns");
-        console.log(nsEndpoint);
-        socket.emit("joinNs", nsEndpoint);
+        nsEndpoint = element.getAttribute("ns");
+        // console.log(nsEndpoint);
+        console.log("here");
+        joinNs(nsEndpoint);
       });
     }
   );
-
   joinNs("/wiki");
 });

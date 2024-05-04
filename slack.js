@@ -26,13 +26,18 @@ io.on("connection", (socket) => {
 
 namespaces.forEach((namespace) => {
   io.of(namespace.endpoint).on("connection", (nsSocket) => {
-    // console.log(`${nsSocket.id} connected to ${namespace.endpoint}`);
-    nsSocket.emit("nsRoomLoad", namespaces[0].rooms);
+    const username = nsSocket.handshake.query.username;
+
+    nsSocket.emit("nsRoomLoad", namespace.rooms);
     nsSocket.on("joinRoom", async (roomToJoin, numberOfUsersCallBack) => {
+      const roomToLeave = Array.from(nsSocket.rooms)[1];
+      nsSocket.leave(roomToLeave);
+
+      updateUsersInRoom(namespace.endpoint, roomToLeave);
       nsSocket.join(roomToJoin);
 
       // we did it at the end so it's not important
-      // let sockets = await io.of("/wiki").in(roomToJoin).fetchSockets();
+      // let sockets = await io.of(namespace.endpoint).in(roomToJoin).fetchSockets();
       // numberOfUsersCallBack(sockets.length);
 
       let nsRoom;
@@ -44,15 +49,14 @@ namespaces.forEach((namespace) => {
       }
 
       nsSocket.emit("historyCatchUp", nsRoom.history);
-      let sockets = await io.of("/wiki").in(roomToJoin).fetchSockets();
-      io.of("/wiki").in(roomToJoin).emit("updateMembers", sockets.length);
+      updateUsersInRoom(namespace.endpoint, roomToJoin);
     });
 
     nsSocket.on("newMessageToServer", (msg) => {
       const fulMsg = {
         text: msg.text,
         time: Date.now(),
-        username: "rbunch",
+        username,
         avatar: "https://via.placeholder.com/30",
       };
       const roomTitle = Array.from(nsSocket.rooms)[1];
@@ -69,3 +73,8 @@ namespaces.forEach((namespace) => {
     });
   });
 });
+
+async function updateUsersInRoom(nsEndpoint, room) {
+  let sockets = await io.of(nsEndpoint).in(room).fetchSockets();
+  io.of(nsEndpoint).in(room).emit("updateMembers", sockets.length);
+}
