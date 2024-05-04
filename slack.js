@@ -31,9 +31,21 @@ namespaces.forEach((namespace) => {
     nsSocket.on("joinRoom", async (roomToJoin, numberOfUsersCallBack) => {
       nsSocket.join(roomToJoin);
 
-      const sockets = await io.of("/wiki").in(roomToJoin).fetchSockets();
+      // we did it at the end so it's not important
+      // let sockets = await io.of("/wiki").in(roomToJoin).fetchSockets();
+      // numberOfUsersCallBack(sockets.length);
 
-      numberOfUsersCallBack(sockets.length);
+      let nsRoom;
+      for (let index = 0; index < namespace.rooms.length; index++) {
+        if (namespace.rooms[index].roomTitle == roomToJoin) {
+          nsRoom = namespace.rooms[index];
+          break;
+        }
+      }
+
+      nsSocket.emit("historyCatchUp", nsRoom.history);
+      let sockets = await io.of("/wiki").in(roomToJoin).fetchSockets();
+      io.of("/wiki").in(roomToJoin).emit("updateMembers", sockets.length);
     });
 
     nsSocket.on("newMessageToServer", (msg) => {
@@ -44,6 +56,13 @@ namespaces.forEach((namespace) => {
         avatar: "https://via.placeholder.com/30",
       };
       const roomTitle = Array.from(nsSocket.rooms)[1];
+
+      for (let index = 0; index < namespace.rooms.length; index++) {
+        if (namespace.rooms[index].roomTitle == roomTitle) {
+          namespace.rooms[index].addMessage(fulMsg);
+        }
+      }
+
       io.of(namespace.endpoint)
         .in(roomTitle)
         .emit("newMessageToClients", fulMsg);
