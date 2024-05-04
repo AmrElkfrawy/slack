@@ -1,17 +1,4 @@
 const socket = io("http://localhost:3000", { transports: ["websocket"] }); //the / endpoint
-const socket2 = io("http://localhost:3000/wiki", {
-  transports: ["websocket"],
-});
-const socket3 = io("http://localhost:3000/mozilla", {
-  transports: ["websocket"],
-});
-const socket4 = io("http://localhost:3000/linux", {
-  transports: ["websocket"],
-});
-
-socket.on("connect", () => {
-  console.log(`connected ${socket.id}`);
-});
 
 socket.on("nsList", (nsData) => {
   let namespaceDiv = document.querySelector(".namespaces");
@@ -29,21 +16,6 @@ socket.on("nsList", (nsData) => {
       });
     }
   );
-});
 
-socket.on("messageFromServer", (msg) => {
-  console.log(msg);
-  socket.emit("messageToServer", { data: "message from client" });
-});
-
-document.querySelector(".message-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const newMessage = document.querySelector("#user-message").value;
-  if (newMessage === "") return;
-  socket.emit("newMessageToServer", { text: newMessage });
-});
-
-socket.on("newMessageToClients", (msg) => {
-  console.log(msg);
-  document.querySelector("#messages").innerHTML += `<li>${msg.text}</li>`;
+  joinNs("/wiki");
 });

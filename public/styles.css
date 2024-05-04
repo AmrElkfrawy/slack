@@ -115,3 +115,7 @@ input {
   display: flex;
   align-items: stretch;
 }
+
+glyphicon {
+  letter-spacing: 220px;
+}
